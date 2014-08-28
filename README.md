@@ -7,3 +7,8 @@ Cairo backend, which has recently received a lot of development attention.
 
 I have found it to be almost twice as fast as the image backend, though
 it can be up to triple the speed in some cases.
+
+TODO
+====
+
+- Implement cairo_gl_surface_create_for_texture
