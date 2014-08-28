@@ -67,8 +67,32 @@ int main(int argc, char** argv) {
 		HEIGHT
 	);
 
-	// TODO: Implemente cairo_gl_surface_create_for_texture test.
-	// else if(method == "gl_texture")
+	// TODO: Implement cairo_gl_surface_create_for_texture test.
+	else if(method == "gl_texture") {
+		GLuint texture = 0;
+
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RGBA,
+			WIDTH,
+			HEIGHT,
+			0,
+			GL_BGRA_EXT,
+			GL_UNSIGNED_BYTE,
+			nullptr
+		);
+
+		surface = cairo_gl_surface_create_for_texture(
+			device,
+			CAIRO_CONTENT_COLOR_ALPHA,
+			texture,
+			WIDTH,
+			HEIGHT
+		);
+	}
 
 	else {
 		std::cerr << "Unknown surface type '" << method << "'; fatal." << std::endl;
