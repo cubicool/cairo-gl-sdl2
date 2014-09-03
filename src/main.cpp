@@ -44,6 +44,15 @@ int main(int argc, char** argv) {
 		return 2;
 	}
 
+	if(window.makeCurrent()) {
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+	 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glViewport(0.0, 0.0, 800.0, 600.0);
+		glClearColor(0.0, 0.1, 0.2, 1.0);
+	}
+
     cairo_device_t* device = cairo_glx_device_create(
 		window.getDisplay(),
 		reinterpret_cast<GLXContext>(window.getCairoContext())
@@ -146,6 +155,8 @@ int main(int argc, char** argv) {
 	window.main([&surface, &window, &texture]() {
 		if(window.makeCairoCurrent()) {
 			draw(surface);
+
+			cairo_gl_surface_swapbuffers(surface);
 		}
 
 		if(window.makeCurrent()) {
