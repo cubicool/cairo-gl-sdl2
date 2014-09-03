@@ -5,6 +5,10 @@
 #include <SDL2/SDL_syswm.h>
 #include <tuple>
 #include <iostream>
+#include <memory>
+
+// TODO: This will require more, eventually.
+typedef std::function<void ()> SDL2DrawCallback;
 
 class SDL2Window {
 public:
@@ -12,7 +16,8 @@ public:
 
 	SDL2Window():
 	_window(nullptr),
-	_context(nullptr) {
+	_context(nullptr),
+	_cairoContext(nullptr) {
 	}
 
 	bool init(int width, int height, unsigned int flags=0) {
@@ -37,9 +42,12 @@ public:
 			return false;
 		}
 
-		_context = SDL_GL_CreateContext(_window);
+		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
-		if(!_context) {
+		_context = SDL_GL_CreateContext(_window);
+		_cairoContext = SDL_GL_CreateContext(_window);
+
+		if(!_context || !_cairoContext) {
 			std::cerr << "SDL_GL_CreateContext failed." << std::endl;
 
 			return false;
@@ -48,7 +56,6 @@ public:
 		SDL_VERSION(&_info.version);
 
 		if(!SDL_GetWindowWMInfo(_window, &_info)) {
-			std::cout << SDL_FALSE << std::endl;
 			std::cerr << "SDL_GetWindowWMInfofailed." << std::endl;
 			std::cerr << SDL_GetError() << std::endl;
 
@@ -58,7 +65,15 @@ public:
 		return true;
 	}
 
-	double main() {
+	void deinit() {
+		SDL_GL_MakeCurrent(_window, nullptr);
+		SDL_GL_DeleteContext(_context);
+		SDL_GL_DeleteContext(_cairoContext);
+		SDL_DestroyWindow(_window);
+		SDL_Quit();
+	}
+
+	double main(SDL2DrawCallback draw) {
 		double frames = 0.0;
 		bool running = true;
 		Uint32 start = SDL_GetTicks();
@@ -70,16 +85,12 @@ public:
 				if(_mainQuit(event)) running = false;
 			}
 
-			// DO STUFF
+			draw();
 
 			SDL_GL_SwapWindow(_window);
 
 			frames += 1.0;
     	}
-
-		SDL_GL_DeleteContext(_context);
-		SDL_DestroyWindow(_window);
-		SDL_Quit();
 
 		return frames / static_cast<double>(SDL_GetTicks() - start);
 	}
@@ -130,9 +141,23 @@ public:
 	};
 
 	SDL_GLContext getContext() {
-		// if(!SDL_GL_MakeCurrent(_window, _context)) return nullptr;
-
 		return _context;
+	}
+
+	SDL_GLContext getCairoContext() {
+		return _cairoContext;
+	}
+
+	bool makeCurrent() {
+		SDL_GL_MakeCurrent(_window, nullptr);
+
+		return !SDL_GL_MakeCurrent(_window, _context);
+	}
+
+	bool makeCairoCurrent() {
+		SDL_GL_MakeCurrent(_window, nullptr);
+
+		return !SDL_GL_MakeCurrent(_window, _cairoContext);
 	}
 
 protected:
@@ -147,6 +172,7 @@ protected:
 
 	SDL_Window* _window;
 	SDL_GLContext _context;
+	SDL_GLContext _cairoContext;
 	SDL_SysWMinfo _info;
 };
 
