@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 
 	std::cout << "Performing " << num_draws << " iterations: " << std::flush;
 
-    auto start = std::chrono::system_clock::now();
+	auto start = std::chrono::system_clock::now();
 	auto last_tick = 0;
 
 	for(auto i = 0; i < num_draws; i++) {
@@ -179,19 +179,19 @@ int main(int argc, char** argv) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			glBegin(GL_QUADS);
 
-			/* Bottom-Left */
+			// Bottom-Left
 			glTexCoord2i(0, 1);
 			glVertex2i(x, y);
 
-			/* Upper-Left */
+			// Upper-Left
 			glTexCoord2i(0, 0);
 			glVertex2i(x, y + height);
 
-			/* Upper-Right */
+			// Upper-Right
 			glTexCoord2i(1, 0);
 			glVertex2i(x + width, y + height);
 
-			/* Bottom-Right */
+			// Bottom-Right
 			glTexCoord2i(1, 1);
 			glVertex2i(x + width, y);
 
