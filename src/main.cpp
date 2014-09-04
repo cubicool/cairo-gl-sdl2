@@ -13,16 +13,31 @@ const unsigned int WIDTH = 512;
 const unsigned int HEIGHT = 512;
 
 inline void draw(cairo_surface_t* surface) {
-	// TODO: Temporary!
+	static double s = 1.0;
+
 	cairo_t* cr = cairo_create(surface);
 
 	cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
 	cairo_paint(cr);
-	cairo_arc(cr, 256.0, 256.0, 200.0, 0.0, 2.0 * 3.14159);
-	cairo_set_source_rgba(cr, 1.0, 0.0, 0.5, 0.5);
+	cairo_translate(cr, WIDTH / 2, HEIGHT / 2);
+	cairo_scale(cr, s, s);
+	cairo_arc(cr, 0.0, 0.0, WIDTH / 4, 0.0, 2.0 * 3.14159);
+	cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
 	cairo_fill(cr);
-
+	cairo_surface_flush(surface);
 	cairo_destroy(cr);
+
+	s += 1.0 / 180.0;
+
+	if(s >= 2.0) s = 1.0;
+}
+
+// TODO: Is unsigned long the right return type?
+template<typename time>
+unsigned long timediff(const time& start) {
+	auto end = std::chrono::system_clock::now();
+
+	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
 int main(int argc, char** argv) {
@@ -48,8 +63,9 @@ int main(int argc, char** argv) {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
-	 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glViewport(0.0, 0.0, 800.0, 600.0);
+		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glViewport(0.0, 0.0, WIDTH, HEIGHT);
 		glClearColor(0.0, 0.1, 0.2, 1.0);
 	}
 
@@ -142,28 +158,32 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	auto end = std::chrono::system_clock::now();
+	std::cout << " done! (" << timediff(start) << "ms)" << std::endl;
 
-	std::cout
-		<< " done! ("
-		<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-		<< "ms)" << std::endl
-	;
+	unsigned long frames = 0;
+	unsigned long cairoTime = 0;
+	unsigned long sdlTime = 0;
 
-	cairo_surface_write_to_png(surface, "foo.png");
+	auto drawStart = std::chrono::system_clock::now();
 
-	window.main([&surface, &window, &texture]() {
+	window.main([&]() {
+		start = std::chrono::system_clock::now();
+
 		if(window.makeCairoCurrent()) {
 			draw(surface);
 
 			cairo_gl_surface_swapbuffers(surface);
 		}
 
+		cairoTime += timediff(start);
+
+		start = std::chrono::system_clock::now();
+
 		if(window.makeCurrent()) {
 			int x = 0;
 			int y = 0;
-			int width = 256;
-			int height = 256;
+			int width = 512;
+			int height = 512;
 
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
@@ -197,7 +217,17 @@ int main(int argc, char** argv) {
 
 			glEnd();
 		}
+
+		sdlTime += timediff(start);
+
+		frames++;
 	});
+
+	auto fps = frames / (timediff(drawStart) / 1000);
+
+	std::cout << "FPS: " << fps << std::endl;
+	std::cout << "Cairo average time: " << cairoTime / frames << "ms" << std::endl;
+	std::cout << "SDL2 average time: " << sdlTime / frames << "ms" << std::endl;
 
 	cairo_surface_destroy(surface);
 	cairo_device_destroy(device);
