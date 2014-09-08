@@ -1,6 +1,6 @@
 #include "common/SDL2.hpp"
+#include "common/timediff.hpp"
 
-#include <chrono>
 #include <cairo.h>
 #include <cairo-gl.h>
 
@@ -23,14 +23,6 @@ inline void draw(cairo_surface_t* surface) {
 	// cairo_surface_flush(surface);
 
 	cairo_destroy(cr);
-}
-
-// TODO: Is unsigned long the right return type?
-template<typename time>
-unsigned long timediff(const time& start) {
-	auto end = std::chrono::system_clock::now();
-
-	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
 int main(int argc, char** argv) {
