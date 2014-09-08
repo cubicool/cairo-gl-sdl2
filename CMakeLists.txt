@@ -22,9 +22,16 @@ LINK_DIRECTORIES(
 	${SDL2_LIBRARY_DIRS}
 )
 
-ADD_EXECUTABLE(cairo-gl-sdl2 "src/main.cpp")
+ADD_EXECUTABLE(cli-benchmark "src/cli-benchmark.cpp")
+ADD_EXECUTABLE(sdl-example "src/sdl-example.cpp")
 
-TARGET_LINK_LIBRARIES(cairo-gl-sdl2
+TARGET_LINK_LIBRARIES(cli-benchmark
+	${OPENGL_LIBRARIES}
+	${CAIRO_LIBRARIES}
+	${SDL2_LIBRARIES}
+)
+
+TARGET_LINK_LIBRARIES(sdl-example
 	${OPENGL_LIBRARIES}
 	${CAIRO_LIBRARIES}
 	${SDL2_LIBRARIES}
