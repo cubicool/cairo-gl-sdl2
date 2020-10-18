@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 		glClearColor(0.0, 0.1, 0.2, 1.0);
 	}
 
-    cairo_device_t* device = cairo_glx_device_create(
+	cairo_device_t* device = cairo_glx_device_create(
 		window.getDisplay(),
 		reinterpret_cast<GLXContext>(window.getCairoContext())
 	);
